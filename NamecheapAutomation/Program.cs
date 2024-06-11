@@ -5,6 +5,18 @@ internal class Program
 {
     private static async Task Main()
     {
+        var selectedOperation = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select an operation:")
+                .PageSize(10)
+                .AddChoices([
+                    "View current hosts",
+                    "Add a host",
+                    "Update a host",
+                    "Delete a host"
+                ])
+        );
+
         using var httpClient = new HttpClient();
         var ip = await httpClient.GetStringAsync("https://api.seeip.org");
 
@@ -39,7 +51,40 @@ internal class Program
 
         AnsiConsole.Write(grid);
 
+        if (selectedOperation == "View current hosts")
+        {
+            return;
+        }
+
         Console.WriteLine();
+
+        if (selectedOperation == "Add a host")
+        {
+            var hostName = AnsiConsole.Ask<string>("Enter the host name:");
+            var recordType = AnsiConsole.Prompt(
+                new SelectionPrompt<RecordType>()
+                    .Title("Select a record type:")
+                    .PageSize(3)
+                    .AddChoices(Enum.GetValues<RecordType>())
+            );
+            var address = AnsiConsole.Ask<string>("Enter the address [IP]:");
+            if (address == string.Empty)
+            {
+                address = ip;
+            }
+
+            // TODO: is this in place? maybe switch to a list
+            hosts.Append(new HostEntry
+            {
+                HostName = hostName,
+                RecordType = recordType,
+                Address = address
+            });
+
+            await api.SetHostsAsync("rickdgray", "com", hosts);
+
+            return;
+        }
 
         var selectedHost = AnsiConsole.Prompt(
             new SelectionPrompt<HostEntry>()
@@ -52,5 +97,29 @@ internal class Program
         );
 
         AnsiConsole.MarkupLine($"Selected host: [bold]{selectedHost.HostName}[/]");
-    }
+
+        if (selectedOperation == "Update a host")
+        {
+            selectedHost.HostName = AnsiConsole.Ask<string>("Enter the host name:");
+            selectedHost.RecordType = AnsiConsole.Prompt(
+                new SelectionPrompt<RecordType>()
+                    .Title("Select a record type:")
+                    .PageSize(3)
+                    .AddChoices(Enum.GetValues<RecordType>())
+            );
+            selectedHost.Address = AnsiConsole.Ask<string>("Enter the address [IP]:");
+            if (selectedHost.Address == string.Empty)
+            {
+                selectedHost.Address = ip;
+            }
+
+            await api.SetHostsAsync("rickdgray", "com", hosts);
+
+            return;
+        }
+
+        // TODO: remove the selected host
+
+        await api.SetHostsAsync("rickdgray", "com", hosts);
+     }
 }
