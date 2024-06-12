@@ -48,7 +48,7 @@ namespace NamecheapAutomation
                     throw new ArgumentException("MX record type requires a preference value.", nameof(hostEntries));
                 }
 
-                query.AddParameter("HostName" + (i + 1), hostEntries[i].HostName);
+                query.AddParameter("HostName" + (i + 1), hostEntries[i].Hostname);
                 query.AddParameter("Address" + (i + 1), hostEntries[i].Address);
                 query.AddParameter("RecordType" + (i + 1), Enum.GetName(typeof(RecordType), hostEntries[i].RecordType) ?? string.Empty);
 

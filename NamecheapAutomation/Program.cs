@@ -43,7 +43,7 @@ internal class Program
         foreach (var host in hosts)
         {
             grid.AddRow([
-                new Text(host.HostName),
+                new Text(host.Hostname),
                 new Text(Enum.GetName(typeof(RecordType), host.RecordType) ?? string.Empty).RightJustified(),
                 new Text(host.Address)
             ]);
@@ -60,14 +60,22 @@ internal class Program
 
         if (selectedOperation == "Add a host")
         {
-            var hostName = AnsiConsole.Ask<string>("Enter the host name:");
+            var hostname = AnsiConsole.Prompt(
+                new TextPrompt<string>("Enter the host name:")
+            );
+
             var recordType = AnsiConsole.Prompt(
                 new SelectionPrompt<RecordType>()
                     .Title("Select a record type:")
                     .PageSize(3)
                     .AddChoices(Enum.GetValues<RecordType>())
             );
-            var address = AnsiConsole.Ask<string>("Enter the address [IP]:");
+
+            var address = AnsiConsole.Prompt(
+                new TextPrompt<string>("Enter the address [[IP]]:")
+                    .AllowEmpty()
+            );
+
             if (address == string.Empty)
             {
                 address = ip;
@@ -76,7 +84,7 @@ internal class Program
             // TODO: is this in place? maybe switch to a list
             hosts.Append(new HostEntry
             {
-                HostName = hostName,
+                Hostname = hostname,
                 RecordType = recordType,
                 Address = address
             });
@@ -93,21 +101,29 @@ internal class Program
                 .PageSize(3)
                 .MoreChoicesText("Scroll down to see more hosts...")
                 .AddChoices(hosts)
-                .UseConverter(h => $"{h.HostName} {Enum.GetName(typeof(RecordType), h.RecordType) ?? string.Empty} {h.Address}")
+                .UseConverter(h => $"{h.Hostname} {Enum.GetName(typeof(RecordType), h.RecordType) ?? string.Empty} {h.Address}")
         );
 
-        AnsiConsole.MarkupLine($"Selected host: [bold]{selectedHost.HostName}[/]");
+        AnsiConsole.MarkupLine($"Selected host: [bold]{selectedHost.Hostname}[/]");
 
         if (selectedOperation == "Update a host")
         {
-            selectedHost.HostName = AnsiConsole.Ask<string>("Enter the host name:");
+            selectedHost.Hostname = AnsiConsole.Prompt(
+                new TextPrompt<string>("Enter the host name:")
+            );
+
             selectedHost.RecordType = AnsiConsole.Prompt(
                 new SelectionPrompt<RecordType>()
                     .Title("Select a record type:")
                     .PageSize(3)
                     .AddChoices(Enum.GetValues<RecordType>())
             );
-            selectedHost.Address = AnsiConsole.Ask<string>("Enter the address [IP]:");
+
+            selectedHost.Address = AnsiConsole.Prompt(
+                new TextPrompt<string>("Enter the address [[IP]]:")
+                    .AllowEmpty()
+            );
+
             if (selectedHost.Address == string.Empty)
             {
                 selectedHost.Address = ip;

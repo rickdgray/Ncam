@@ -7,7 +7,7 @@ namespace NamecheapAutomation
         [XmlAttribute("HostId")]
         public int Id { get; set; }
         [XmlAttribute("Name")]
-        public string HostName { get; set; } = string.Empty;
+        public string Hostname { get; set; } = string.Empty;
         [XmlAttribute("Type")]
         public RecordType RecordType { get; set; }
         [XmlAttribute("Address")]
