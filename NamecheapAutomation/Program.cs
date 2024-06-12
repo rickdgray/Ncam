@@ -21,12 +21,12 @@ internal class Program
         var ip = await httpClient.GetStringAsync("https://api.seeip.org");
 
         // sandbox
-        var api = new NamecheapApi("rickdgray", "", ip, true);
+        var api = new NamecheapApi("rickdgray", "97f39e43010f4bd8bc6fb9427263139c", ip, true);
 
         // prod
         //var api = new NameCheapApi("rickdgray", "", ip);
 
-        var response = await api.GetHostsAsync("rickdgray", "com");
+        var response = await api.GetHostsAsync("rickdgray.com");
         var hosts = response.HostEntries;
 
         var grid = new Grid();
@@ -89,7 +89,7 @@ internal class Program
                 Address = address
             });
 
-            await api.SetHostsAsync("rickdgray", "com", hosts);
+            await api.SetHostsAsync("rickdgray.com", hosts);
 
             return;
         }
@@ -129,13 +129,13 @@ internal class Program
                 selectedHost.Address = ip;
             }
 
-            await api.SetHostsAsync("rickdgray", "com", hosts);
+            await api.SetHostsAsync("rickdgray.com", hosts);
 
             return;
         }
 
         // TODO: remove the selected host
 
-        await api.SetHostsAsync("rickdgray", "com", hosts);
+        await api.SetHostsAsync("rickdgray.com", hosts);
      }
 }

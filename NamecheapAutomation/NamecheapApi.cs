@@ -34,48 +34,51 @@ namespace NamecheapAutomation
             };
         }
 
-        public async Task SetHostsAsync(string secondLevelDomain, string topLevelDomain, HostEntry[] hostEntries)
+        public async Task SetHostsAsync(string domain, IEnumerable<HostEntry> hosts)
         {
-            var query = new Query(_params);
-            query.AddParameter("SLD", secondLevelDomain);
-            query.AddParameter("TLD", topLevelDomain);
+            var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
+            var query = new Query(_params)
+                .AddParameter("SLD", sld)
+                .AddParameter("TLD", tld);
 
-            for (int i = 0; i < hostEntries.Length; i++)
+            // TODO: use hosts.Index() when .net 9 is stable
+            foreach (var (i, host) in hosts.Select((x, i) => (i, x)))
             {
-                if ((hostEntries[i].RecordType == RecordType.MX || hostEntries[i].RecordType == RecordType.MXE)
-                    && string.IsNullOrEmpty(hostEntries[i].MxPref))
+                if ((host.RecordType == RecordType.MX || host.RecordType == RecordType.MXE)
+                    && string.IsNullOrEmpty(host.MxPref))
                 {
-                    throw new ArgumentException("MX record type requires a preference value.", nameof(hostEntries));
+                    throw new ArgumentException("MX record type requires a preference value.", nameof(hosts));
                 }
 
-                query.AddParameter("HostName" + (i + 1), hostEntries[i].Hostname);
-                query.AddParameter("Address" + (i + 1), hostEntries[i].Address);
-                query.AddParameter("RecordType" + (i + 1), Enum.GetName(typeof(RecordType), hostEntries[i].RecordType) ?? string.Empty);
+                query.AddParameter($"HostName{i + 1}", host.Hostname);
+                query.AddParameter($"Address{i + 1}", host.Address);
+                query.AddParameter($"RecordType{i + 1}", Enum.GetName(typeof(RecordType), host.RecordType) ?? string.Empty);
 
-                if (!string.IsNullOrEmpty(hostEntries[i].MxPref))
+                if (!string.IsNullOrEmpty(host.MxPref))
                 {
-                    query.AddParameter("MXPref" + (i + 1), hostEntries[i].MxPref);
+                    query.AddParameter($"MXPref{i + 1}", host.MxPref);
                 }
                 else
                 {
-                    query.AddParameter("MXPref" + (i + 1), "10");
+                    query.AddParameter($"MXPref{i + 1}", "10");
                 }
 
-                if (!string.IsNullOrEmpty(hostEntries[i].Ttl))
+                if (!string.IsNullOrEmpty(host.Ttl))
                 {
-                    query.AddParameter("TTL" + (i + 1), hostEntries[i].Ttl);
+                    query.AddParameter($"TTL{i + 1}", host.Ttl);
                 }
-                else if (hostEntries[i].RecordType == RecordType.ALIAS)
+                else if (host.RecordType == RecordType.ALIAS)
                 {
-                    query.AddParameter("TTL" + (i + 1), "300");
+                    query.AddParameter($"TTL{i + 1}", "300");
                 }
             }
 
             await query.ExecuteAsync("namecheap.domains.dns.setHosts");
         }
 
-        public async Task<DnsHostResult> GetHostsAsync(string sld, string tld)
+        public async Task<DnsHostResult> GetHostsAsync(string domain)
         {
+            var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
             var query = new Query(_params)
                 .AddParameter("SLD", sld)
                 .AddParameter("TLD", tld);
