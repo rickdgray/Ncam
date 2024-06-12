@@ -26,8 +26,7 @@ internal class Program
         // prod
         //var api = new NameCheapApi("rickdgray", "", ip);
 
-        var response = await api.GetHostsAsync("rickdgray.com");
-        var hosts = response.HostEntries;
+        var hosts = await api.GetHostsAsync("rickdgray.com");
 
         var grid = new Grid();
         grid.AddColumn();
@@ -82,7 +81,7 @@ internal class Program
             }
 
             // TODO: is this in place? maybe switch to a list
-            hosts.Append(new HostEntry
+            hosts.Append(new Host
             {
                 Hostname = hostname,
                 RecordType = recordType,
@@ -95,7 +94,7 @@ internal class Program
         }
 
         var selectedHost = AnsiConsole.Prompt(
-            new SelectionPrompt<HostEntry>()
+            new SelectionPrompt<Host>()
                 .Title("Select a host entry:")
                 .EnableSearch()
                 .PageSize(3)

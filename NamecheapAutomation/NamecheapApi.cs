@@ -34,7 +34,7 @@ namespace NamecheapAutomation
             };
         }
 
-        public async Task SetHostsAsync(string domain, IEnumerable<HostEntry> hosts)
+        public async Task SetHostsAsync(string domain, IEnumerable<Host> hosts)
         {
             var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
             var query = new Query(_params)
@@ -76,7 +76,7 @@ namespace NamecheapAutomation
             await query.ExecuteAsync("namecheap.domains.dns.setHosts");
         }
 
-        public async Task<DnsHostResult> GetHostsAsync(string domain)
+        public async Task<List<Host>> GetHostsAsync(string domain)
         {
             var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
             var query = new Query(_params)
@@ -93,7 +93,7 @@ namespace NamecheapAutomation
                 ?.CreateReader()) ?? throw new Exception("Received invalid XML response.");
 
             var result = serializer.Deserialize(reader) as DnsHostResult;
-            return result ?? throw new Exception("Failed to deserialize response.");
+            return result?.Hosts ?? throw new Exception("Failed to deserialize response.");
         }
     }
 }

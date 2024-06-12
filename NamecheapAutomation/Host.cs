@@ -2,7 +2,7 @@
 
 namespace NamecheapAutomation
 {
-    public class HostEntry
+    public class Host
     {
         [XmlAttribute("HostId")]
         public int Id { get; set; }
