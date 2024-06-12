@@ -1,11 +1,10 @@
 ﻿namespace NamecheapAutomation
 {
-    internal class GlobalParameters
+    public class GlobalParameters
     {
-        public string ApiUser { get; set; }
-        public string ApiKey { get; set; }
-        public string UserName { get; set; }
-        public string CLientIp { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string ApiKey { get; set; } = string.Empty;
+        public string ClientIp { get; set; } = string.Empty;
         public bool IsSandBox { get; set; }
     }
 }

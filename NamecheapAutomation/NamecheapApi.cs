@@ -1,41 +1,36 @@
-﻿using System.Net;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
+using System.Net;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace NamecheapAutomation
 {
-    public class NameCheapApi
+    public class NamecheapApi
     {
+        private readonly XNamespace _namespace = "http://api.namecheap.com/xml.response";
         private readonly GlobalParameters _params;
-        private readonly XNamespace _ns = XNamespace.Get("http://api.namecheap.com/xml.response");
 
-        public NameCheapApi(string username, string apiUser, string apiKey, string clientIp, bool isSandbox = false)
+        public NamecheapApi(string username, string apiKey, string clientIp, bool isSandbox = false)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(username);
-            ArgumentException.ThrowIfNullOrWhiteSpace(apiUser);
             ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
-            ArgumentException.ThrowIfNullOrWhiteSpace(clientIp);
 
-            if (IPAddress.TryParse(clientIp, out var ip))
+            if (!IPAddress.TryParse(clientIp, out var ip))
             {
-                if (ip.AddressFamily != AddressFamily.InterNetwork)
-                {
-                    throw new ArgumentException($"Client IP {clientIp} is not a valid IPv4 address.", nameof(clientIp));
-                }
+                throw new ArgumentException($"{clientIp} does not seem to be a valid IP address.", nameof(clientIp));
             }
-            else
+
+            if (ip.AddressFamily != AddressFamily.InterNetwork)
             {
-                throw new ArgumentException($"{clientIp} does not seem a valid IP address.", nameof(clientIp));
+                throw new ArgumentException($"Client IP {clientIp} is not a valid IPv4 address.", nameof(clientIp));
             }
 
             _params = new GlobalParameters()
             {
+                UserName = username,
                 ApiKey = apiKey,
-                ApiUser = apiUser,
-                CLientIp = clientIp,
-                IsSandBox = isSandbox,
-                UserName = username
+                ClientIp = clientIp,
+                IsSandBox = isSandbox
             };
         }
 
@@ -85,11 +80,15 @@ namespace NamecheapAutomation
                 .AddParameter("SLD", sld)
                 .AddParameter("TLD", tld);
 
-            XDocument doc = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
+            var doc = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
 
-            var serializer = new XmlSerializer(typeof(DnsHostResult), _ns.NamespaceName);
+            var serializer = new XmlSerializer(typeof(DnsHostResult), _namespace.NamespaceName);
 
-            using var reader = doc.Root.Element(_ns + "CommandResponse").Element(_ns + "DomainDNSGetHostsResult").CreateReader();
+            using var reader = (doc?.Root
+                ?.Element(_namespace + "CommandResponse")
+                ?.Element(_namespace + "DomainDNSGetHostsResult")
+                ?.CreateReader()) ?? throw new Exception("Received invalid XML response.");
+
             var result = serializer.Deserialize(reader) as DnsHostResult;
             return result ?? throw new Exception("Failed to deserialize response.");
         }

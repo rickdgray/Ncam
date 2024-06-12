@@ -3,34 +3,34 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace NamecheapAutomation
 {
-    internal class Query
+    public class Query
     {
-        private readonly XNamespace _ns = XNamespace.Get("http://api.namecheap.com/xml.response");
+        private readonly XNamespace _namespace = "http://api.namecheap.com/xml.response";
         private readonly GlobalParameters _globals;
         private readonly Dictionary<string, string> _parameters = [];
 
-        internal Query(GlobalParameters globals)
+        public Query(GlobalParameters globals)
         {
             ArgumentNullException.ThrowIfNull(globals);
 
             _globals = globals;
         }
 
-        internal Query AddParameter(string key, string value)
+        public Query AddParameter(string key, string value)
         {
             _parameters.Add(key, value);
             return this;
         }
 
-        internal async Task<XDocument> ExecuteAsync(string command)
+        public async Task<XDocument> ExecuteAsync(string command)
         {
             var baseUrl = _globals.IsSandBox ? "https://api.sandbox.namecheap.com/xml.response" : "https://api.namecheap.com/xml.response";
             var param = new Dictionary<string, string?>
             {
-                { "ApiUser", _globals.ApiUser },
-                { "ApiKey", _globals.ApiKey },
                 { "UserName", _globals.UserName },
-                { "ClientIp", _globals.CLientIp },
+                { "ApiUser", _globals.UserName },
+                { "ApiKey", _globals.ApiKey },
+                { "ClientIp", _globals.ClientIp },
                 { "Command", command }
             };
 
@@ -46,11 +46,17 @@ namespace NamecheapAutomation
             response.EnsureSuccessStatusCode();
             var xml = await response.Content.ReadAsStringAsync();
 
-            XDocument doc = XDocument.Parse(xml);
+            var doc = XDocument.Parse(xml);
 
             if (doc?.Root?.Attribute("Status")?.Value.Equals("ERROR", StringComparison.OrdinalIgnoreCase) ?? true)
             {
-                throw new Exception(string.Join(",", doc.Root.Element(_ns + "Errors").Elements(_ns + "Error").Select(o => o.Value).ToArray()));
+                throw new Exception(string.Join(",",
+                    doc?.Root
+                        ?.Element(_namespace + "Errors")
+                        ?.Elements(_namespace + "Error")
+                        .Select(o => o.Value)
+                        .ToArray() ?? []
+                ));
             }
             
             return doc;

@@ -21,10 +21,10 @@ internal class Program
         var ip = await httpClient.GetStringAsync("https://api.seeip.org");
 
         // sandbox
-        var api = new NameCheapApi("rickdgray", "rickdgray", "", ip, true);
+        var api = new NamecheapApi("rickdgray", "", ip, true);
 
         // prod
-        //var api = new NameCheapApi("rickdgray", "rickdgray", "", ip);
+        //var api = new NameCheapApi("rickdgray", "", ip);
 
         var response = await api.GetHostsAsync("rickdgray", "com");
         var hosts = response.HostEntries;
