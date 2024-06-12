@@ -67,7 +67,9 @@ namespace NamecheapAutomation
                 {
                     query.AddParameter($"TTL{i + 1}", host.Ttl);
                 }
-                else if (host.RecordType == RecordType.ALIAS)
+                
+                // alias require TTL to be 300 so we force it here
+                if (host.RecordType == RecordType.ALIAS)
                 {
                     query.AddParameter($"TTL{i + 1}", "300");
                 }
