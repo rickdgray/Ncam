@@ -16,9 +16,13 @@ namespace NamecheapAutomation
             _globals = globals;
         }
 
-        public Query AddParameter(string key, string value)
+        public Query SetParameter(string key, string value)
         {
-            _parameters.Add(key, value);
+            if (!_parameters.TryAdd(key, value))
+            {
+                _parameters[key] = value;
+            }
+
             return this;
         }
 

@@ -38,8 +38,8 @@ namespace NamecheapAutomation
         {
             var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
             var query = new Query(_params)
-                .AddParameter("SLD", sld)
-                .AddParameter("TLD", tld);
+                .SetParameter("SLD", sld)
+                .SetParameter("TLD", tld);
 
             // TODO: use hosts.Index() when .net 9 is stable
             foreach (var (i, host) in hosts.Select((x, i) => (i, x)))
@@ -50,28 +50,28 @@ namespace NamecheapAutomation
                     throw new ArgumentException("MX record type requires a preference value.", nameof(hosts));
                 }
 
-                query.AddParameter($"HostName{i + 1}", host.Hostname);
-                query.AddParameter($"Address{i + 1}", host.Address);
-                query.AddParameter($"RecordType{i + 1}", Enum.GetName(typeof(RecordType), host.RecordType) ?? string.Empty);
+                query.SetParameter($"HostName{i + 1}", host.Hostname);
+                query.SetParameter($"Address{i + 1}", host.Address);
+                query.SetParameter($"RecordType{i + 1}", Enum.GetName(typeof(RecordType), host.RecordType) ?? string.Empty);
 
                 if (!string.IsNullOrEmpty(host.MxPref))
                 {
-                    query.AddParameter($"MXPref{i + 1}", host.MxPref);
+                    query.SetParameter($"MXPref{i + 1}", host.MxPref);
                 }
                 else
                 {
-                    query.AddParameter($"MXPref{i + 1}", "10");
+                    query.SetParameter($"MXPref{i + 1}", "10");
                 }
 
                 if (!string.IsNullOrEmpty(host.Ttl))
                 {
-                    query.AddParameter($"TTL{i + 1}", host.Ttl);
+                    query.SetParameter($"TTL{i + 1}", host.Ttl);
                 }
                 
                 // alias require TTL to be 300 so we force it here
                 if (host.RecordType == RecordType.ALIAS)
                 {
-                    query.AddParameter($"TTL{i + 1}", "300");
+                    query.SetParameter($"TTL{i + 1}", "300");
                 }
             }
 
@@ -82,8 +82,8 @@ namespace NamecheapAutomation
         {
             var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
             var query = new Query(_params)
-                .AddParameter("SLD", sld)
-                .AddParameter("TLD", tld);
+                .SetParameter("SLD", sld)
+                .SetParameter("TLD", tld);
 
             var doc = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
 
