@@ -1,173 +1,56 @@
 ﻿using NamecheapAutomation;
 using Spectre.Console;
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Text;
 
 internal class Program
 {
-    private static async Task Main()
+    private static async Task Main(string[] args)
     {
-        var ip = string.Empty;
-        await AnsiConsole.Status()
-            .StartAsync("Fetching current IP...", async ctx =>
-            {
-                using var httpClient = new HttpClient();
-                ip = await httpClient.GetStringAsync("https://api.seeip.org");
-            });
+        Console.CancelKeyPress += (_, _) => Environment.Exit(0);
+        Console.OutputEncoding = Encoding.UTF8;
 
-        var api = new NamecheapApi("rickdgray", "97f39e43010f4bd8bc6fb9427263139c", ip, true);
+        AnsiConsole.Console
+            .Write(new FigletText("NCAM")
+            .Color(Color.Red3_1));
 
-        while (true)
+        var domain = new Option<string>("--domain", "The domain to manage DNS records on.")
         {
-            var hosts = new List<Host>();
-            await AnsiConsole.Status()
-                .StartAsync("Fetching current hosts...", async ctx =>
-                {
-                    hosts = await api.GetHostsAsync("rickdgray.com");
-                });
-            
-            var grid = new Grid();
-            grid.AddColumn();
-            grid.AddColumn();
-            grid.AddColumn();
+            IsRequired = true
+        };
+        domain.AddAlias("-d");
 
-            grid.AddRow([
-                new Text("Host Name", new Style(Color.Green, Color.Black)),
-                new Text("Record Type", new Style(Color.Red, Color.Black)).RightJustified(),
-                new Text("Address", new Style(Color.Blue, Color.Black))
-            ]);
+        var username = new Option<string>("--username", "The Namecheap username.")
+        {
+            IsRequired = true
+        };
+        username.AddAlias("-u");
 
-            foreach (var host in hosts)
-            {
-                grid.AddRow([
-                    new Text(host.Hostname),
-                    new Text(Enum.GetName(typeof(RecordType), host.RecordType) ?? string.Empty).RightJustified(),
-                    new Text(host.Address)
-                ]);
-            }
+        var apiKey = new Option<string>("--apiKey", "The Namecheap API key.")
+        {
+            IsRequired = true
+        };
+        apiKey.AddAlias("-k");
 
-            AnsiConsole.Write(new Rule("rickdgray.com"));
-            AnsiConsole.Write(grid);
-            AnsiConsole.WriteLine();
+        var sandbox = new Option<bool>("--sandbox", "Use the Namecheap sandbox API.")
+        {
+            IsRequired = false
+        };
+        sandbox.AddAlias("-s");
 
-            var selectedOperation = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Select an operation:")
-                .PageSize(10)
-                .AddChoices([
-                    "Refresh hosts",
-                    "Add a host",
-                    "Update a host",
-                    "Delete a host",
-                    "Exit"
-                ])
-            );
+        var rootCommand = new RootCommand("Namecheap API Manager");
+        var hostCommand = new Command("host", "Manage hosts for a domain.");
 
-            if (selectedOperation == "Exit")
-            {
-                break;
-            }
+        hostCommand.AddOption(domain);
+        hostCommand.AddOption(username);
+        hostCommand.AddOption(apiKey);
+        hostCommand.AddOption(sandbox);
 
-            if (selectedOperation == "Refresh hosts")
-            {
-                continue;
-            }
+        hostCommand.SetHandler(HostCommandHandler.Handle, domain, username, apiKey, sandbox);
 
-            if (selectedOperation == "Add a host")
-            {
-                var hostname = AnsiConsole.Prompt(
-                    new TextPrompt<string>("Enter the host name:")
-                );
+        rootCommand.AddCommand(hostCommand);
 
-                var recordType = AnsiConsole.Prompt(
-                    new SelectionPrompt<RecordType>()
-                        .Title("Select a record type:")
-                        .PageSize(3)
-                        .AddChoices(Enum.GetValues<RecordType>())
-                );
-
-                var address = AnsiConsole.Prompt(
-                    new TextPrompt<string>("Enter the address [[IP]]:")
-                        .AllowEmpty()
-                );
-
-                if (address == string.Empty)
-                {
-                    address = ip;
-                }
-
-                hosts.Add(new Host
-                {
-                    Hostname = hostname,
-                    RecordType = recordType,
-                    Address = address
-                });
-
-                await AnsiConsole.Status()
-                    .StartAsync("Adding new host...", async ctx =>
-                    {
-                        await api.SetHostsAsync("rickdgray.com", hosts);
-                    });
-            }
-
-            if (selectedOperation == "Update a host")
-            {
-                var selectedHost = AnsiConsole.Prompt(
-                    new SelectionPrompt<Host>()
-                        .Title("Select a host to update:")
-                        .EnableSearch()
-                        .PageSize(3)
-                        .MoreChoicesText("Scroll down to see more hosts...")
-                        .AddChoices(hosts)
-                        .UseConverter(h => $"{h.Hostname} {Enum.GetName(typeof(RecordType), h.RecordType) ?? string.Empty} {h.Address}")
-                );
-
-                selectedHost.Hostname = AnsiConsole.Prompt(
-                    new TextPrompt<string>("Enter the host name:")
-                );
-
-                selectedHost.RecordType = AnsiConsole.Prompt(
-                    new SelectionPrompt<RecordType>()
-                        .Title("Select a record type:")
-                        .PageSize(3)
-                        .AddChoices(Enum.GetValues<RecordType>())
-                );
-
-                selectedHost.Address = AnsiConsole.Prompt(
-                    new TextPrompt<string>("Enter the address [[IP]]:")
-                        .AllowEmpty()
-                );
-
-                if (selectedHost.Address == string.Empty)
-                {
-                    selectedHost.Address = ip;
-                }
-
-                await AnsiConsole.Status()
-                    .StartAsync("Updating host...", async ctx =>
-                    {
-                        await api.SetHostsAsync("rickdgray.com", hosts);
-                    });
-            }
-
-            if (selectedOperation == "Delete a host")
-            {
-                var selectedHost = AnsiConsole.Prompt(
-                    new SelectionPrompt<Host>()
-                        .Title("Select a host to delete:")
-                        .EnableSearch()
-                        .PageSize(3)
-                        .MoreChoicesText("Scroll down to see more hosts...")
-                        .AddChoices(hosts)
-                        .UseConverter(h => $"{h.Hostname} {Enum.GetName(typeof(RecordType), h.RecordType) ?? string.Empty} {h.Address}")
-                );
-
-                hosts.Remove(selectedHost);
-
-                await AnsiConsole.Status()
-                    .StartAsync("Deleting host...", async ctx =>
-                    {
-                        await api.SetHostsAsync("rickdgray.com", hosts);
-                    });
-            }
-        }
+        await rootCommand.InvokeAsync(args);
      }
 }

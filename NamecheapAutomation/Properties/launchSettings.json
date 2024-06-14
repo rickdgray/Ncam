@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NamecheapAutomation": {
+      "commandName": "Project",
+      "commandLineArgs": "host -d rickdgray.com -u rickdgray -k asdf1234 -s true"
+    }
+  }
+}
