@@ -45,23 +45,49 @@ namespace NamecheapAutomation
             ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
 
             var ip = string.Empty;
-            await AnsiConsole.Status()
-                .StartAsync("Fetching current IP...", async ctx =>
-                {
-                    using var httpClient = new HttpClient();
-                    ip = await httpClient.GetStringAsync("https://api.seeip.org");
-                });
+
+            try
+            {
+                await AnsiConsole.Status()
+                    .StartAsync("Fetching current IP...", async ctx =>
+                    {
+                        using var httpClient = new HttpClient();
+                        ip = await httpClient.GetStringAsync("https://api.seeip.org", cancellationToken);
+                    });
+            }
+            catch (OperationCanceledException)
+            {
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+                return 1;
+            }
 
             var api = new NamecheapApi(username, apiKey, ip, sandbox);
 
             while (true)
             {
                 var hosts = new List<Host>();
-                await AnsiConsole.Status()
-                    .StartAsync("Fetching current hosts...", async ctx =>
-                    {
-                        hosts = await api.GetHostsAsync(domain);
-                    });
+
+                try
+                {
+                    await AnsiConsole.Status()
+                        .StartAsync("Fetching current hosts...", async ctx =>
+                        {
+                            hosts = await api.GetHostsAsync(domain);
+                        });
+                }
+                catch (OperationCanceledException)
+                {
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+                    return 1;
+                }
 
                 var grid = new Grid();
                 grid.AddColumn();
@@ -102,7 +128,7 @@ namespace NamecheapAutomation
 
                 if (selectedOperation == "Exit")
                 {
-                    break;
+                    return 0;
                 }
 
                 if (selectedOperation == "Refresh hosts")
@@ -140,18 +166,23 @@ namespace NamecheapAutomation
                         Address = address
                     });
 
-                    await AnsiConsole.Status()
-                        .StartAsync("Adding new host...", async ctx =>
-                        {
-                            try
+                    try
+                    {
+                        await AnsiConsole.Status()
+                            .StartAsync("Adding new host...", async ctx =>
                             {
                                 await api.SetHostsAsync(domain, hosts);
-                            }
-                            catch (Exception ex)
-                            {
-                                AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
-                            }
-                        });
+                            });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+                        return 1;
+                    }
                 }
 
                 if (selectedOperation == "Update a host")
@@ -187,11 +218,23 @@ namespace NamecheapAutomation
                         selectedHost.Address = ip;
                     }
 
-                    await AnsiConsole.Status()
-                        .StartAsync("Updating host...", async ctx =>
-                        {
-                            await api.SetHostsAsync(domain, hosts);
-                        });
+                    try
+                    {
+                        await AnsiConsole.Status()
+                            .StartAsync("Updating host...", async ctx =>
+                            {
+                                await api.SetHostsAsync(domain, hosts);
+                            });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+                        return 1;
+                    }
                 }
 
                 if (selectedOperation == "Delete a host")
@@ -208,15 +251,25 @@ namespace NamecheapAutomation
 
                     hosts.Remove(selectedHost);
 
-                    await AnsiConsole.Status()
-                        .StartAsync("Deleting host...", async ctx =>
-                        {
-                            await api.SetHostsAsync(domain, hosts);
-                        });
+                    try
+                    {
+                        await AnsiConsole.Status()
+                            .StartAsync("Deleting host...", async ctx =>
+                            {
+                                await api.SetHostsAsync(domain, hosts);
+                            });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+                        return 1;
+                    }
                 }
             }
-
-            return 0;
         }
     }
 }

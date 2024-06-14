@@ -6,8 +6,10 @@ using System.Text;
 
 internal class Program
 {
-    private static async Task Main(string[] args)
+    private static async Task<int> Main(string[] args)
     {
+        int returnCode = 0;
+
         Console.CancelKeyPress += (_, _) => Environment.Exit(0);
         Console.OutputEncoding = Encoding.UTF8;
 
@@ -25,11 +27,13 @@ internal class Program
 
         hostCommand.SetHandler(async (context) =>
         {
-            await new HostCommandHandler().InvokeAsync(context);
+            returnCode = await new HostCommandHandler().InvokeAsync(context);
         });
 
         rootCommand.AddCommand(hostCommand);
 
         await rootCommand.InvokeAsync(args);
+
+        return returnCode;
      }
 }
