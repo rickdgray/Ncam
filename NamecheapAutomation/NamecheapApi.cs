@@ -87,14 +87,14 @@ namespace NamecheapAutomation
 
             var doc = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
 
-            var serializer = new XmlSerializer(typeof(DnsHostResult), _namespace.NamespaceName);
+            var serializer = new XmlSerializer(typeof(DnsHostResponse), _namespace.NamespaceName);
 
             using var reader = (doc?.Root
                 ?.Element(_namespace + "CommandResponse")
                 ?.Element(_namespace + "DomainDNSGetHostsResult")
                 ?.CreateReader()) ?? throw new Exception("Received invalid XML response.");
 
-            var result = serializer.Deserialize(reader) as DnsHostResult;
+            var result = serializer.Deserialize(reader) as DnsHostResponse;
             return result?.Hosts ?? throw new Exception("Failed to deserialize response.");
         }
     }

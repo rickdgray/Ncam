@@ -3,7 +3,7 @@
 namespace NamecheapAutomation
 {
     [XmlRoot("DomainDNSGetHostsResult")]
-    public class DnsHostResult
+    public class DnsHostResponse
     {
         [XmlElement("host")]
         public List<Host> Hosts { get; set; } = [];
