@@ -15,39 +15,18 @@ internal class Program
             .Write(new FigletText("NCAM")
             .Color(Color.Red3_1));
 
-        var domain = new Option<string>("--domain", "The domain to manage DNS records on.")
-        {
-            IsRequired = true
-        };
-        domain.AddAlias("-d");
-
-        var username = new Option<string>("--username", "The Namecheap username.")
-        {
-            IsRequired = true
-        };
-        username.AddAlias("-u");
-
-        var apiKey = new Option<string>("--apiKey", "The Namecheap API key.")
-        {
-            IsRequired = true
-        };
-        apiKey.AddAlias("-k");
-
-        var sandbox = new Option<bool>("--sandbox", "Use the Namecheap sandbox API.")
-        {
-            IsRequired = false
-        };
-        sandbox.AddAlias("-s");
-
         var rootCommand = new RootCommand("Namecheap API Manager");
         var hostCommand = new Command("host", "Manage hosts for a domain.");
 
-        hostCommand.AddOption(domain);
-        hostCommand.AddOption(username);
-        hostCommand.AddOption(apiKey);
-        hostCommand.AddOption(sandbox);
+        hostCommand.AddOption(HostCommandHandler.Domain);
+        hostCommand.AddOption(HostCommandHandler.Username);
+        hostCommand.AddOption(HostCommandHandler.ApiKey);
+        hostCommand.AddOption(HostCommandHandler.Sandbox);
 
-        hostCommand.SetHandler(HostCommandHandler.Handle, domain, username, apiKey, sandbox);
+        hostCommand.SetHandler(async (context) =>
+        {
+            await new HostCommandHandler().InvokeAsync(context);
+        });
 
         rootCommand.AddCommand(hostCommand);
 

@@ -1,11 +1,49 @@
 ﻿using Spectre.Console;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 
 namespace NamecheapAutomation
 {
-    public static class HostCommandHandler
+    public class HostCommandHandler : ICommandHandler
     {
-        public static async Task Handle(string domain, string username, string apiKey, bool sandbox)
+        public static readonly Option<string> Domain = new(["--domain", "-d"], "The domain to manage DNS records on.")
         {
+            IsRequired = true
+        };
+
+        public static readonly Option<string> Username = new(["--username", "-u"], "The Namecheap username.")
+        {
+            IsRequired = true
+        };
+
+        public static readonly Option<string> ApiKey = new(["--apiKey", "-k"], "The Namecheap API key.")
+        {
+            IsRequired = true
+        };
+
+        public static readonly Option<bool> Sandbox = new(["--sandbox", "-s"], "Use the Namecheap sandbox API.")
+        {
+            IsRequired = false
+        };
+
+        public int Invoke(InvocationContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<int> InvokeAsync(InvocationContext context)
+        {
+            var cancellationToken = context.GetCancellationToken();
+
+            var domain = context.ParseResult.GetValueForOption(Domain);
+            var username = context.ParseResult.GetValueForOption(Username);
+            var apiKey = context.ParseResult.GetValueForOption(ApiKey);
+            var sandbox = context.ParseResult.GetValueForOption(Sandbox);
+
+            ArgumentException.ThrowIfNullOrWhiteSpace(domain);
+            ArgumentException.ThrowIfNullOrWhiteSpace(username);
+            ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+
             var ip = string.Empty;
             await AnsiConsole.Status()
                 .StartAsync("Fetching current IP...", async ctx =>
@@ -177,6 +215,8 @@ namespace NamecheapAutomation
                         });
                 }
             }
+
+            return 0;
         }
     }
 }
