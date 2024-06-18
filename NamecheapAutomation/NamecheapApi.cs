@@ -1,7 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace NamecheapAutomation
 {
@@ -85,17 +84,9 @@ namespace NamecheapAutomation
                 .SetParameter("SLD", sld)
                 .SetParameter("TLD", tld);
 
-            var doc = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
+            var xml = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
 
-            var serializer = new XmlSerializer(typeof(DnsHostResponse), _namespace.NamespaceName);
-
-            using var reader = (doc?.Root
-                ?.Element(_namespace + "CommandResponse")
-                ?.Element(_namespace + "DomainDNSGetHostsResult")
-                ?.CreateReader()) ?? throw new Exception("Received invalid XML response.");
-
-            var result = serializer.Deserialize(reader) as DnsHostResponse;
-            return result?.Hosts ?? throw new Exception("Failed to deserialize response.");
+            return XmlHelper.ParseHostResponse(xml);
         }
     }
 }
