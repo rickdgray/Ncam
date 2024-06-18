@@ -146,7 +146,7 @@ namespace NamecheapAutomation
                         new SelectionPrompt<RecordType>()
                             .Title("Select a record type:")
                             .PageSize(3)
-                            .AddChoices(Enum.GetValues<RecordType>())
+                            .AddChoices(Enum.GetValues<RecordType>().Skip(1))
                     );
 
                     var address = AnsiConsole.Prompt(
@@ -205,7 +205,7 @@ namespace NamecheapAutomation
                         new SelectionPrompt<RecordType>()
                             .Title("Select a record type:")
                             .PageSize(3)
-                            .AddChoices(Enum.GetValues<RecordType>())
+                            .AddChoices(Enum.GetValues<RecordType>().Skip(1))
                     );
 
                     selectedHost.Address = AnsiConsole.Prompt(
