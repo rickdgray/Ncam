@@ -1,39 +1,12 @@
-﻿using System.Net.Sockets;
-using System.Net;
-
-namespace NamecheapAutomation
+﻿namespace NamecheapAutomation
 {
-    public class NamecheapApi
+    public class NamecheapApi(GlobalParameters parameters)
     {
-        private readonly GlobalParameters _params;
+        private readonly GlobalParameters _params = parameters;
 
-        public NamecheapApi(string username, string apiKey, string clientIp, bool isSandbox = false)
+        public async Task SetHostsAsync(IEnumerable<Host> hosts)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(username);
-            ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
-
-            if (!IPAddress.TryParse(clientIp, out var ip))
-            {
-                throw new ArgumentException($"{clientIp} does not seem to be a valid IP address.", nameof(clientIp));
-            }
-
-            if (ip.AddressFamily != AddressFamily.InterNetwork)
-            {
-                throw new ArgumentException($"Client IP {clientIp} is not a valid IPv4 address.", nameof(clientIp));
-            }
-
-            _params = new GlobalParameters()
-            {
-                UserName = username,
-                ApiKey = apiKey,
-                ClientIp = clientIp,
-                IsSandBox = isSandbox
-            };
-        }
-
-        public async Task SetHostsAsync(string domain, IEnumerable<Host> hosts)
-        {
-            var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
+            var (sld, tld) = _params.Domain.Split('.') switch { var a => (a[0], a[1]) };
             var query = new Query(_params)
                 .SetParameter("SLD", sld)
                 .SetParameter("TLD", tld);
@@ -75,9 +48,9 @@ namespace NamecheapAutomation
             await query.ExecuteAsync("namecheap.domains.dns.setHosts");
         }
 
-        public async Task<List<Host>> GetHostsAsync(string domain)
+        public async Task<List<Host>> GetHostsAsync()
         {
-            var (sld, tld) = domain.Split('.') switch { var a => (a[0], a[1]) };
+            var (sld, tld) = _params.Domain.Split('.') switch { var a => (a[0], a[1]) };
             var query = new Query(_params)
                 .SetParameter("SLD", sld)
                 .SetParameter("TLD", tld);

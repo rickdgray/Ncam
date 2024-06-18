@@ -6,6 +6,8 @@ namespace NamecheapAutomation
 {
     public class HostCommandHandler : ICommandHandler
     {
+        private readonly GlobalParameters _params = new();
+
         public static readonly Option<string> Domain = new(["--domain", "-d"], "The domain to manage DNS records on.")
         {
             IsRequired = true
@@ -65,7 +67,13 @@ namespace NamecheapAutomation
                 return 1;
             }
 
-            var api = new NamecheapApi(username, apiKey, ip, sandbox);
+            _params.Domain = domain;
+            _params.UserName = username;
+            _params.ApiKey = apiKey;
+            _params.ClientIp = ip;
+            _params.IsSandBox = sandbox;
+
+            var api = new NamecheapApi(_params);
 
             while (true)
             {
@@ -76,7 +84,7 @@ namespace NamecheapAutomation
                     await AnsiConsole.Status()
                         .StartAsync("Fetching current hosts...", async ctx =>
                         {
-                            hosts = await api.GetHostsAsync(domain);
+                            hosts = await api.GetHostsAsync();
                         });
                 }
                 catch (OperationCanceledException)
@@ -109,7 +117,7 @@ namespace NamecheapAutomation
                     ]);
                 }
 
-                AnsiConsole.Write(new Rule(domain));
+                AnsiConsole.Write(new Rule(_params.Domain));
                 AnsiConsole.Write(grid);
                 AnsiConsole.WriteLine();
 
@@ -156,7 +164,7 @@ namespace NamecheapAutomation
 
                     if (address == string.Empty)
                     {
-                        address = ip;
+                        address = _params.ClientIp;
                     }
 
                     hosts.Add(new Host
@@ -171,7 +179,7 @@ namespace NamecheapAutomation
                         await AnsiConsole.Status()
                             .StartAsync("Adding new host...", async ctx =>
                             {
-                                await api.SetHostsAsync(domain, hosts);
+                                await api.SetHostsAsync(hosts);
                             });
                     }
                     catch (OperationCanceledException)
@@ -215,7 +223,7 @@ namespace NamecheapAutomation
 
                     if (selectedHost.Address == string.Empty)
                     {
-                        selectedHost.Address = ip;
+                        selectedHost.Address = _params.ClientIp;
                     }
 
                     try
@@ -223,7 +231,7 @@ namespace NamecheapAutomation
                         await AnsiConsole.Status()
                             .StartAsync("Updating host...", async ctx =>
                             {
-                                await api.SetHostsAsync(domain, hosts);
+                                await api.SetHostsAsync(hosts);
                             });
                     }
                     catch (OperationCanceledException)
@@ -256,7 +264,7 @@ namespace NamecheapAutomation
                         await AnsiConsole.Status()
                             .StartAsync("Deleting host...", async ctx =>
                             {
-                                await api.SetHostsAsync(domain, hosts);
+                                await api.SetHostsAsync(hosts);
                             });
                     }
                     catch (OperationCanceledException)
