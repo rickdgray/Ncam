@@ -5,7 +5,6 @@ namespace NamecheapAutomation
 {
     public class Query
     {
-        private readonly XNamespace _namespace = "http://api.namecheap.com/xml.response";
         private readonly GlobalParameters _globals;
         private readonly Dictionary<string, string> _parameters = [];
 
@@ -50,20 +49,7 @@ namespace NamecheapAutomation
             response.EnsureSuccessStatusCode();
             var xml = await response.Content.ReadAsStringAsync();
 
-            var doc = XDocument.Parse(xml);
-
-            if (doc?.Root?.Attribute("Status")?.Value.Equals("ERROR", StringComparison.OrdinalIgnoreCase) ?? true)
-            {
-                throw new Exception(string.Join(",",
-                    doc?.Root
-                        ?.Element(_namespace + "Errors")
-                        ?.Elements(_namespace + "Error")
-                        .Select(o => o.Value)
-                        .ToArray() ?? []
-                ));
-            }
-            
-            return doc;
+            return XDocument.Parse(xml);
         }
     }
 }
