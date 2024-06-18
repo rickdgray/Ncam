@@ -2,6 +2,7 @@
 {
     public enum RecordType
     {
+        UKNOWN,
         A,
         AAA,
         ALIAS,

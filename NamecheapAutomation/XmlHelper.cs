@@ -4,44 +4,40 @@ namespace NamecheapAutomation
 {
     public static class XmlHelper
     {
+        public readonly static XNamespace Namespace = "http://api.namecheap.com/xml.response";
         public static List<Host> ParseHostResponse(XDocument doc)
         {
-            XNamespace ns = "http://api.namecheap.com/xml.response";
+            var root = doc.Root ?? throw new Exception("No root element found in the response.");
 
-            var root = doc.Root;
+            var status = root.Attribute("Status")?.Value ?? string.Empty;
 
-            string status = root.Attribute("Status")?.Value;
-            Console.WriteLine($"ApiResponse Status: {status}");
-
-            if (root?.Attribute("Status")?.Value.Equals("ERROR", StringComparison.OrdinalIgnoreCase) ?? true)
+            if (status.Equals("ERROR", StringComparison.OrdinalIgnoreCase))
             {
-                throw new Exception(string.Join(",",
-                    root?.Descendants("Error")
+                var errors = root.Descendants("Error")
                         .Select(x => x.Value)
-                        .ToArray()));
+                        .ToArray() ?? [];
+
+                throw new Exception(string.Join(",", errors));
             }
 
-            string requestedCommand = root.Element(ns + "RequestedCommand")?.Value;
-
-            var commandResponse = root.Element(ns + "CommandResponse");
-
-            var domainDNSGetHostsResult = commandResponse.Element(ns + "DomainDNSGetHostsResult");
+            var hostElements = root
+                .Element(Namespace + "CommandResponse")
+                ?.Element(Namespace + "DomainDNSGetHostsResult")
+                ?.Elements(Namespace + "host") ?? [];
 
             var hosts = new List<Host>();
 
-            foreach (var hostElement in domainDNSGetHostsResult.Elements(ns + "host"))
+            foreach (var hostElement in hostElements)
             {
-                var host = new Host
+                hosts.Add(new Host
                 {
                     Id = int.TryParse(hostElement.Attribute("HostId")?.Value, out var id) ? id : -1,
-                    Hostname = hostElement.Attribute("Name")?.Value,
-                    Address = hostElement.Attribute("Address")?.Value,
-                    RecordType = Enum.Parse<RecordType>(hostElement.Attribute("Type")?.Value),
-                    MxPref = hostElement.Attribute("MXPref")?.Value,
-                    Ttl = hostElement.Attribute("TTL")?.Value
-                };
-
-                hosts.Add(host);
+                    Hostname = hostElement.Attribute("Name")?.Value ?? string.Empty,
+                    Address = hostElement.Attribute("Address")?.Value ?? string.Empty,
+                    RecordType = Enum.Parse<RecordType>(hostElement.Attribute("Type")?.Value ?? "UKNOWN"),
+                    MxPref = hostElement.Attribute("MXPref")?.Value ?? string.Empty,
+                    Ttl = hostElement.Attribute("TTL")?.Value ?? string.Empty
+                });
             }
 
             return hosts;

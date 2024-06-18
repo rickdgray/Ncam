@@ -1,12 +1,10 @@
 ﻿using System.Net.Sockets;
 using System.Net;
-using System.Xml.Linq;
 
 namespace NamecheapAutomation
 {
     public class NamecheapApi
     {
-        private readonly XNamespace _namespace = "http://api.namecheap.com/xml.response";
         private readonly GlobalParameters _params;
 
         public NamecheapApi(string username, string apiKey, string clientIp, bool isSandbox = false)

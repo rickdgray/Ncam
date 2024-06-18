@@ -1,20 +1,12 @@
-﻿using System.Xml.Serialization;
-
-namespace NamecheapAutomation
+﻿namespace NamecheapAutomation
 {
     public class Host
     {
-        [XmlAttribute("HostId")]
         public int Id { get; set; }
-        [XmlAttribute("Name")]
         public string Hostname { get; set; } = string.Empty;
-        [XmlAttribute("Type")]
         public RecordType RecordType { get; set; }
-        [XmlAttribute("Address")]
         public string Address { get; set; } = string.Empty;
-        [XmlAttribute("MXPref")]
         public string MxPref { get; set; } = "10";
-        [XmlAttribute("TTL")]
         public string Ttl { get; set; } = string.Empty;
     }
 }
