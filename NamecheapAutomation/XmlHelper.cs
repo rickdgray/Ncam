@@ -14,8 +14,8 @@ namespace NamecheapAutomation
             if (status.Equals("ERROR", StringComparison.OrdinalIgnoreCase))
             {
                 var errors = root.Descendants("Error")
-                        .Select(x => x.Value)
-                        .ToArray() ?? [];
+                    .Select(x => x.Value)
+                    .ToArray() ?? [];
 
                 throw new Exception(string.Join(",", errors));
             }
