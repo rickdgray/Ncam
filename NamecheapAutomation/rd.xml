@@ -1,0 +1,6 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+	<Application>
+		<Assembly Name="System.Xml.Serialization" Dynamic="Required All" />
+		<Assembly Name="NamecheapAutomation" Dynamic="Required All" />
+	</Application>
+</Directives>
