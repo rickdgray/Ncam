@@ -6,7 +6,7 @@ using System.CommandLine.Invocation;
 
 namespace Ncam.Commands
 {
-    public class HostCommandHandler(IOptions<GlobalParameters> parameters,
+    public class HostAddCommandHandler(IOptions<GlobalParameters> parameters,
         IAnsiConsole console,
         IIpService ipService,
         INamecheapService namecheapService) : ICommandHandler
@@ -29,9 +29,26 @@ namespace Ncam.Commands
             var apiKey = context.ParseResult.GetValueForOption(GlobalOptions.ApiKey);
             var sandbox = context.ParseResult.GetValueForOption(GlobalOptions.Sandbox);
 
+            var hosts = context.ParseResult.GetValueForOption(HostOptions.Hostname);
+            var recordTypes = context.ParseResult.GetValueForOption(HostOptions.RecordType);
+            var addresses = context.ParseResult.GetValueForOption(HostOptions.Address);
+
             ArgumentException.ThrowIfNullOrWhiteSpace(domain);
             ArgumentException.ThrowIfNullOrWhiteSpace(username);
             ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+
+            // TODO: better argument validation
+            if (hosts?.Count == 0)
+            {
+                console.MarkupLine("[red]No hosts specified.[/]");
+                return 1;
+            }
+
+            if (hosts.Count != recordTypes.Count || hosts.Count != addresses.Count)
+            {
+                console.MarkupLine("[red]Hosts, record types, and addresses must have the same number of values.[/]");
+                return 1;
+            }
 
             _parameters.Domain = domain;
             _parameters.UserName = username;
@@ -41,6 +58,18 @@ namespace Ncam.Commands
             _parameters.ClientIp = await _ipService.GetIpAsync(cancellationToken);
 
             var currentHosts = await _namecheapService.GetHostsAsync();
+
+            foreach (var (host, recordType, address) in hosts.Zip(recordTypes, addresses))
+            {
+                currentHosts.Add(new Host
+                {
+                    Hostname = host,
+                    RecordType = Enum.Parse<RecordType>(recordType, true),
+                    Address = string.IsNullOrWhiteSpace(address) ? _parameters.ClientIp : address
+                });
+            }
+
+            await _namecheapService.SetHostsAsync(currentHosts);
 
             var grid = new Grid();
             grid.AddColumn();
@@ -53,7 +82,7 @@ namespace Ncam.Commands
                 new Text("Address", new Style(Color.Blue, Color.Black))
             ]);
 
-            foreach (var host in currentHosts)
+            foreach (var host in await _namecheapService.GetHostsAsync())
             {
                 grid.AddRow([
                     new Text(host.Hostname),

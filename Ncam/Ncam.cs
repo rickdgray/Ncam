@@ -28,14 +28,21 @@ namespace Ncam
             rootCommand.AddGlobalOption(GlobalOptions.Sandbox);
 
             var hostCommand = new Command("host", "Manage hosts for a domain.");
-            hostCommand.AddOption(HostCommandHandler.Hostname);
-            hostCommand.AddOption(HostCommandHandler.RecordType);
-            hostCommand.AddOption(HostCommandHandler.Address);
-
             hostCommand.SetHandler(async (context) =>
             {
                 await new HostCommandHandler(parameters, console, ipService, namecheapService).InvokeAsync(context);
             });
+
+            var hostAddCommand = new Command("add", "Add hosts to a domain.");
+            hostAddCommand.AddOption(HostOptions.Hostname);
+            hostAddCommand.AddOption(HostOptions.RecordType);
+            hostAddCommand.AddOption(HostOptions.Address);
+            hostAddCommand.SetHandler(async (context) =>
+            {
+                await new HostAddCommandHandler(parameters, console, ipService, namecheapService).InvokeAsync(context);
+            });
+
+            hostCommand.AddCommand(hostAddCommand);
 
             rootCommand.AddCommand(hostCommand);
 
