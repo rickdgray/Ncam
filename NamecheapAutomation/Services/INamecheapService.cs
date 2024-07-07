@@ -1,5 +1,6 @@
-﻿
-namespace NamecheapAutomation
+﻿using NamecheapAutomation.Models;
+
+namespace NamecheapAutomation.Services
 {
     public interface INamecheapService
     {

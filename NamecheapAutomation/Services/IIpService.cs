@@ -1,5 +1,4 @@
-﻿
-namespace NamecheapAutomation.Services
+﻿namespace NamecheapAutomation.Services
 {
     public interface IIpService
     {

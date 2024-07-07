@@ -1,4 +1,4 @@
-﻿namespace NamecheapAutomation
+﻿namespace NamecheapAutomation.Models
 {
     public enum RecordType
     {

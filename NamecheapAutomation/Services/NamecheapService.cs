@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
+using NamecheapAutomation.Models;
 using Spectre.Console;
 
-namespace NamecheapAutomation
+namespace NamecheapAutomation.Services
 {
     public class NamecheapService(IOptions<GlobalParameters> parameters,
         IAnsiConsole console,

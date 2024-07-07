@@ -1,6 +1,7 @@
-﻿using System.Xml.Linq;
+﻿using NamecheapAutomation.Models;
+using System.Xml.Linq;
 
-namespace NamecheapAutomation
+namespace NamecheapAutomation.Services
 {
     public static class XmlHelper
     {

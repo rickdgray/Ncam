@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NamecheapAutomation;
+using NamecheapAutomation.Models;
 using NamecheapAutomation.Services;
 using Spectre.Console;
 using System.Text;

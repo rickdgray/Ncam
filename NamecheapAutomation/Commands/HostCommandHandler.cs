@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using NamecheapAutomation.Models;
 using NamecheapAutomation.Services;
 using Spectre.Console;
 using System.CommandLine;

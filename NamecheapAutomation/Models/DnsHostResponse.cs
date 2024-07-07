@@ -1,6 +1,4 @@
-﻿using System.Xml.Serialization;
-
-namespace NamecheapAutomation
+﻿namespace NamecheapAutomation.Models
 {
     public class DnsHostResponse
     {
