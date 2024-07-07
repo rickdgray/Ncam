@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NamecheapAutomation;
-using NamecheapAutomation.Models;
-using NamecheapAutomation.Services;
+using Ncam.Models;
+using Ncam.Services;
 using Spectre.Console;
 using System.Text;
 
@@ -15,9 +14,9 @@ builder.Services.AddOptions<GlobalParameters>();
 builder.Services.AddHttpClient<IIpService, IpService>();
 builder.Services.AddHttpClient<INamecheapService, NamecheapService>();
 builder.Services.AddSingleton(AnsiConsole.Console);
-builder.Services.AddTransient<Ncam>();
+builder.Services.AddTransient<Ncam.Ncam>();
 
 var host = builder.Build();
 await host.Services
-    .GetRequiredService<Ncam>()
+    .GetRequiredService<Ncam.Ncam>()
     .ExecuteAsync(args);

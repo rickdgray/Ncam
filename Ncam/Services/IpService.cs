@@ -1,6 +1,6 @@
 ﻿using Spectre.Console;
 
-namespace NamecheapAutomation.Services
+namespace Ncam.Services
 {
     public class IpService(HttpClient httpClient,
         IAnsiConsole console) : IIpService

@@ -1,7 +1,7 @@
-﻿using NamecheapAutomation.Models;
+﻿using Ncam.Models;
 using System.Xml.Linq;
 
-namespace NamecheapAutomation.Services
+namespace Ncam.Services
 {
     public static class XmlHelper
     {

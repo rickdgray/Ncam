@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
-using NamecheapAutomation.Commands;
-using NamecheapAutomation.Models;
-using NamecheapAutomation.Services;
+using Ncam.Commands;
+using Ncam.Models;
+using Ncam.Services;
 using Spectre.Console;
 using System.CommandLine;
 
-namespace NamecheapAutomation
+namespace Ncam
 {
     public class Ncam(IOptions<GlobalParameters> parameters,
         IAnsiConsole console,

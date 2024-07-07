@@ -1,6 +1,6 @@
 ﻿using System.CommandLine;
 
-namespace NamecheapAutomation.Commands
+namespace Ncam.Commands
 {
     public static class GlobalOptions
     {

@@ -1,8 +1,8 @@
 ﻿using System.Xml.Linq;
 using Microsoft.AspNetCore.WebUtilities;
-using NamecheapAutomation.Models;
+using Ncam.Models;
 
-namespace NamecheapAutomation.Services
+namespace Ncam.Services
 {
     public class Query
     {

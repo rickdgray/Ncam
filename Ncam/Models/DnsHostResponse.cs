@@ -1,4 +1,4 @@
-﻿namespace NamecheapAutomation.Models
+﻿namespace Ncam.Models
 {
     public class DnsHostResponse
     {

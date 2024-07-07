@@ -1,6 +1,6 @@
 ﻿using System.CommandLine.Invocation;
 
-namespace NamecheapAutomation.Commands
+namespace Ncam.Commands
 {
     public class NcamCommandHandler : ICommandHandler
     {

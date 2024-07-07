@@ -1,4 +1,4 @@
-﻿namespace NamecheapAutomation.Services
+﻿namespace Ncam.Services
 {
     public interface IIpService
     {

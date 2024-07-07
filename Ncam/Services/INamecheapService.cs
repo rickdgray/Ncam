@@ -1,6 +1,6 @@
-﻿using NamecheapAutomation.Models;
+﻿using Ncam.Models;
 
-namespace NamecheapAutomation.Services
+namespace Ncam.Services
 {
     public interface INamecheapService
     {

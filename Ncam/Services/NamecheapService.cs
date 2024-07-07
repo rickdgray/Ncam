@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
-using NamecheapAutomation.Models;
+using Ncam.Models;
 using Spectre.Console;
 
-namespace NamecheapAutomation.Services
+namespace Ncam.Services
 {
     public class NamecheapService(IOptions<GlobalParameters> parameters,
         IAnsiConsole console,
