@@ -6,13 +6,16 @@ namespace NamecheapAutomation
     public class Query
     {
         private readonly GlobalParameters _globals;
+        private readonly HttpClient _httpClient;
         private readonly Dictionary<string, string> _parameters = [];
 
-        public Query(GlobalParameters globals)
+        public Query(GlobalParameters globals, HttpClient httpClient)
         {
             ArgumentNullException.ThrowIfNull(globals);
+            ArgumentNullException.ThrowIfNull(httpClient);
 
             _globals = globals;
+            _httpClient = httpClient;
         }
 
         public Query SetParameter(string key, string value)
@@ -44,8 +47,7 @@ namespace NamecheapAutomation
 
             var requestUrl = new Uri(QueryHelpers.AddQueryString(baseUrl, param));
 
-            using var httpClient = new HttpClient();
-            var response = await httpClient.GetAsync(requestUrl.ToString());
+            var response = await _httpClient.GetAsync(requestUrl.ToString());
             response.EnsureSuccessStatusCode();
             var xml = await response.Content.ReadAsStringAsync();
 

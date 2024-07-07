@@ -1,13 +1,17 @@
-﻿namespace NamecheapAutomation
+﻿using Microsoft.Extensions.Options;
+
+namespace NamecheapAutomation
 {
-    public class NamecheapApi(GlobalParameters parameters)
+    public class NamecheapService(IOptions<GlobalParameters> parameters,
+        HttpClient httpClient) : INamecheapService
     {
-        private readonly GlobalParameters _params = parameters;
+        private readonly GlobalParameters _parameters = parameters.Value;
+        private readonly HttpClient _httpClient = httpClient;
 
         public async Task SetHostsAsync(IEnumerable<Host> hosts)
         {
-            var (sld, tld) = _params.Domain.Split('.') switch { var a => (a[0], a[1]) };
-            var query = new Query(_params)
+            var (sld, tld) = _parameters.Domain.Split('.') switch { var a => (a[0], a[1]) };
+            var query = new Query(_parameters, _httpClient)
                 .SetParameter("SLD", sld)
                 .SetParameter("TLD", tld);
 
@@ -37,7 +41,7 @@
                 {
                     query.SetParameter($"TTL{i + 1}", host.Ttl);
                 }
-                
+
                 // alias require TTL to be 300 so we force it here
                 if (host.RecordType == RecordType.ALIAS)
                 {
@@ -50,8 +54,8 @@
 
         public async Task<List<Host>> GetHostsAsync()
         {
-            var (sld, tld) = _params.Domain.Split('.') switch { var a => (a[0], a[1]) };
-            var query = new Query(_params)
+            var (sld, tld) = _parameters.Domain.Split('.') switch { var a => (a[0], a[1]) };
+            var query = new Query(_parameters, _httpClient)
                 .SetParameter("SLD", sld)
                 .SetParameter("TLD", tld);
 
