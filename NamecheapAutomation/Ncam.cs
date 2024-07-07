@@ -7,14 +7,18 @@ using System.CommandLine;
 namespace NamecheapAutomation
 {
     public class Ncam(IOptions<GlobalParameters> parameters,
+        IAnsiConsole console,
         IIpService ipService,
         INamecheapService namecheapService)
     {
+        public const string Name = "NCAM";
+
         public async Task<int> ExecuteAsync(string[] args)
         {
-            AnsiConsole.Console
-                .Write(new FigletText("NCAM")
-                .Color(Color.Red3_1));
+            console
+                .Write(new FigletText(Name)
+                .Centered()
+                .Color(Color.Red3));
 
             var rootCommand = new RootCommand("Namecheap API Manager");
             rootCommand.AddGlobalOption(GlobalOptions.Domain);
