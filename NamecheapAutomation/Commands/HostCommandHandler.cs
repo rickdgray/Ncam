@@ -7,6 +7,7 @@ using System.CommandLine.Invocation;
 namespace NamecheapAutomation.Commands
 {
     public class HostCommandHandler(IOptions<GlobalParameters> parameters,
+        IAnsiConsole console,
         IIpService ipService,
         INamecheapService namecheapService) : ICommandHandler
     {
@@ -32,26 +33,12 @@ namespace NamecheapAutomation.Commands
             var apiKey = context.ParseResult.GetValueForOption(GlobalOptions.ApiKey);
             var sandbox = context.ParseResult.GetValueForOption(GlobalOptions.Sandbox);
 
+            var ip = await _ipService.GetIpAsync(cancellationToken);
+
             ArgumentException.ThrowIfNullOrWhiteSpace(domain);
             ArgumentException.ThrowIfNullOrWhiteSpace(username);
             ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
-
-            var ip = string.Empty;
-
-            try
-            {
-                await AnsiConsole.Status()
-                    .StartAsync("Fetching current IP...", async ctx => ip = await _ipService.GetIpAsync(cancellationToken));
-            }
-            catch (OperationCanceledException)
-            {
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
-                return 1;
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(ip);
 
             _parameters.Domain = domain;
             _parameters.UserName = username;
@@ -59,25 +46,7 @@ namespace NamecheapAutomation.Commands
             _parameters.ClientIp = ip;
             _parameters.IsSandBox = sandbox;
 
-            var hosts = new List<Host>();
-
-            try
-            {
-                await AnsiConsole.Status()
-                    .StartAsync("Fetching current hosts...", async ctx =>
-                    {
-                        hosts = await _namecheapService.GetHostsAsync();
-                    });
-            }
-            catch (OperationCanceledException)
-            {
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
-                return 1;
-            }
+            var hosts = await _namecheapService.GetHostsAsync();
 
             var grid = new Grid();
             grid.AddColumn();
@@ -99,8 +68,8 @@ namespace NamecheapAutomation.Commands
                 ]);
             }
 
-            AnsiConsole.Write(new Rule(_parameters.Domain));
-            AnsiConsole.Write(grid);
+            console.Write(new Rule(_parameters.Domain));
+            console.Write(grid);
 
             return 0;
         }

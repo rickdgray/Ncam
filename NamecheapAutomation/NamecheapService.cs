@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
+using Spectre.Console;
 
 namespace NamecheapAutomation
 {
     public class NamecheapService(IOptions<GlobalParameters> parameters,
+        IAnsiConsole console,
         HttpClient httpClient) : INamecheapService
     {
         private readonly GlobalParameters _parameters = parameters.Value;
@@ -54,14 +56,29 @@ namespace NamecheapAutomation
 
         public async Task<List<Host>> GetHostsAsync()
         {
-            var (sld, tld) = _parameters.Domain.Split('.') switch { var a => (a[0], a[1]) };
-            var query = new Query(_parameters, _httpClient)
-                .SetParameter("SLD", sld)
-                .SetParameter("TLD", tld);
+            var hosts = new List<Host>();
 
-            var xml = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
+            try
+            {
+                await console.Status()
+                    .StartAsync("Fetching current hosts...", async ctx =>
+                    {
+                        var (sld, tld) = _parameters.Domain.Split('.') switch { var a => (a[0], a[1]) };
+                        var query = new Query(_parameters, _httpClient)
+                            .SetParameter("SLD", sld)
+                            .SetParameter("TLD", tld);
 
-            return XmlHelper.ParseHostResponse(xml);
+                        var xml = await query.ExecuteAsync("namecheap.domains.dns.getHosts");
+
+                        hosts = XmlHelper.ParseHostResponse(xml);
+                    });
+            }
+            catch (OperationCanceledException)
+            {
+                return [];
+            }
+
+            return hosts;
         }
     }
 }

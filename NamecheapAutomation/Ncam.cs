@@ -33,7 +33,7 @@ namespace NamecheapAutomation
 
             hostCommand.SetHandler(async (context) =>
             {
-                await new HostCommandHandler(parameters, ipService, namecheapService).InvokeAsync(context);
+                await new HostCommandHandler(parameters, console, ipService, namecheapService).InvokeAsync(context);
             });
 
             rootCommand.AddCommand(hostCommand);
